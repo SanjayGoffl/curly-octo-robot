@@ -3,19 +3,19 @@
 
 # Hardcoded treatment recommendations for apple diseases
 APPLE_DISEASE_RECOMMENDATIONS = {
-    "Apple Healthy": {
+    "Healthy": {
         "treatment": "No treatment needed. Continue regular maintenance.",
         "prevention": "Maintain good orchard hygiene. Monitor leaves regularly for signs of disease."
     },
-    "Apple Scab": {
+    "Scab": {
         "treatment": "Apply fungicide sprays (e.g., sulfur or copper-based). Remove infected leaves.",
         "prevention": "Prune for good air circulation. Remove fallen leaves. Apply preventive fungicides in spring."
     },
-    "Apple Black Rot": {
+    "Black Rot": {
         "treatment": "Remove infected fruit and branches. Apply fungicide. Prune affected areas.",
         "prevention": "Maintain good sanitation. Remove mummified fruit. Apply preventive fungicides."
     },
-    "Apple Cedar Rust": {
+    "Cedar Rust": {
         "treatment": "Apply fungicide sprays. Remove infected leaves and fruit.",
         "prevention": "Remove nearby cedar/juniper trees if possible. Apply preventive fungicides. Prune for air circulation."
     }
@@ -30,9 +30,12 @@ def get_recommendations(disease_name):
         disease_name (str): Name of the disease
         
     Returns:
-        dict: Dictionary with 'treatment' and 'prevention' keys, or None if disease not found
+        tuple: (treatment, prevention) strings, or (None, None) if disease not found
     """
-    return APPLE_DISEASE_RECOMMENDATIONS.get(disease_name, None)
+    rec = APPLE_DISEASE_RECOMMENDATIONS.get(disease_name, None)
+    if rec is None:
+        return None, None
+    return rec['treatment'], rec['prevention']
 
 
 def get_all_recommendations():

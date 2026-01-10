@@ -70,28 +70,28 @@ This implementation plan breaks down the AI Crop Disease Identifier into discret
     - Generate random crop predictions and verify Stage 2 only executes for Apple
     - _Requirements: 1.1, 1.2_
 
-- [ ] 4. Stage 2: Apple Disease Classification Model Training
-  - [ ] 4.1 Implement Stage 2 model architecture
+- [x] 4. Stage 2: Apple Disease Classification Model Training
+  - [x] 4.1 Implement Stage 2 model architecture
     - Load same pre-trained CNN backbone as Stage 1
     - Freeze base layers
     - Add classification head for 4 apple diseases
     - _Requirements: 3.1, 3.7_
 
-  - [ ] 4.2 Implement class imbalance handling for Stage 2
+  - [x] 4.2 Implement class imbalance handling for Stage 2
     - Implement weighted loss (inverse frequency weighting)
     - Implement oversampling for minority classes (Scab, Black Rot, Cedar Rust)
     - Ensure Healthy class is NOT oversampled
     - Apply stronger augmentation to minority classes
     - _Requirements: 3.3, 3.4, 3.5, 3.6_
 
-  - [ ] 4.3 Implement Stage 2 training loop
+  - [x] 4.3 Implement Stage 2 training loop
     - GPU-accelerated training with early stopping
     - Track loss, accuracy, per-class precision/recall, macro F1-score
     - Special tracking of Cedar Rust recall
     - Save best checkpoint based on validation macro F1-score
     - _Requirements: 10.1, 10.3, 10.5, 10.6, 10.7_
 
-  - [ ] 4.4 Evaluate Stage 2 on validation and test sets
+  - [x] 4.4 Evaluate Stage 2 on validation and test sets
     - Generate confusion matrix
     - Report per-class precision, recall, F1-score
     - Report macro F1-score (primary metric)
@@ -111,26 +111,26 @@ This implementation plan breaks down the AI Crop Disease Identifier into discret
     - Verify Cedar Rust recall ≥0.70 (prototype goal)
     - _Requirements: 3.9, 8.2_
 
-- [ ] 5. Inference Pipeline and Confidence Thresholds
-  - [ ] 5.1 Implement inference function for Stage 1
+- [x] 5. Inference Pipeline and Confidence Thresholds
+  - [x] 5.1 Implement inference function for Stage 1
     - Load trained Stage 1 model
     - Preprocess input image
     - Run prediction and extract confidence score
     - _Requirements: 6.1, 2.1, 2.2_
 
-  - [ ] 5.2 Implement inference function for Stage 2
+  - [x] 5.2 Implement inference function for Stage 2
     - Load trained Stage 2 model
     - Preprocess input image
     - Run prediction and extract confidence score
     - _Requirements: 6.3, 3.1, 3.2_
 
-  - [ ] 5.3 Implement confidence threshold logic
+  - [x] 5.3 Implement confidence threshold logic
     - Stage 1: T_crop = 0.7 (configurable)
     - Stage 2: T_disease = 0.6 (configurable)
     - Return "Unknown" if confidence below threshold
     - _Requirements: 12.2, 12.4_
 
-  - [ ] 5.4 Implement hierarchical pipeline orchestration
+  - [x] 5.4 Implement hierarchical pipeline orchestration
     - Run Stage 1 on input image
     - If Stage 1 predicts Apple with confidence ≥ 0.7: run Stage 2
     - Otherwise: return Stage 1 result only
