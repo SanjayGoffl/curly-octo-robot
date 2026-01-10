@@ -117,12 +117,13 @@ class Trainer:
             'f1_macro': f1_macro
         }
     
-    def validate(self, val_loader):
+    def validate(self, val_loader, track_class_recall=None):
         """
         Validate model.
         
         Args:
             val_loader (DataLoader): Validation data loader
+            track_class_recall (int): Optional class index to track recall for
             
         Returns:
             dict: Validation metrics (loss, accuracy, f1_macro)
@@ -155,15 +156,24 @@ class Trainer:
             all_labels, all_preds, average='macro', zero_division=0
         )
         
-        return {
+        results = {
             'loss': avg_loss,
             'accuracy': accuracy,
             'f1_macro': f1_macro,
             'predictions': all_preds,
             'labels': all_labels
         }
+        
+        # Track specific class recall if requested
+        if track_class_recall is not None:
+            _, recall, _, _ = precision_recall_fscore_support(
+                all_labels, all_preds, average=None, zero_division=0
+            )
+            results['tracked_class_recall'] = recall[track_class_recall]
+        
+        return results
     
-    def train(self, train_loader, val_loader, checkpoint_name="model.pth"):
+    def train(self, train_loader, val_loader, checkpoint_name="model.pth", track_class_recall=None):
         """
         Train model with early stopping.
         
@@ -171,12 +181,13 @@ class Trainer:
             train_loader (DataLoader): Training data loader
             val_loader (DataLoader): Validation data loader
             checkpoint_name (str): Name for checkpoint file
+            track_class_recall (int): Optional class index to track recall for
         """
         print(f"Starting training for {self.epochs} epochs...")
         
         for epoch in range(self.epochs):
             train_metrics = self.train_epoch(train_loader)
-            val_metrics = self.validate(val_loader)
+            val_metrics = self.validate(val_loader, track_class_recall=track_class_recall)
             
             # Store history
             self.train_history['loss'].append(train_metrics['loss'])
@@ -187,13 +198,20 @@ class Trainer:
             self.val_history['accuracy'].append(val_metrics['accuracy'])
             self.val_history['f1_macro'].append(val_metrics['f1_macro'])
             
-            print(f"Epoch {epoch+1}/{self.epochs} - "
-                  f"Train Loss: {train_metrics['loss']:.4f}, "
-                  f"Train Acc: {train_metrics['accuracy']:.4f}, "
-                  f"Train F1: {train_metrics['f1_macro']:.4f} | "
-                  f"Val Loss: {val_metrics['loss']:.4f}, "
-                  f"Val Acc: {val_metrics['accuracy']:.4f}, "
-                  f"Val F1: {val_metrics['f1_macro']:.4f}")
+            # Print training progress
+            log_msg = (f"Epoch {epoch+1}/{self.epochs} - "
+                      f"Train Loss: {train_metrics['loss']:.4f}, "
+                      f"Train Acc: {train_metrics['accuracy']:.4f}, "
+                      f"Train F1: {train_metrics['f1_macro']:.4f} | "
+                      f"Val Loss: {val_metrics['loss']:.4f}, "
+                      f"Val Acc: {val_metrics['accuracy']:.4f}, "
+                      f"Val F1: {val_metrics['f1_macro']:.4f}")
+            
+            # Add tracked class recall to log if available
+            if 'tracked_class_recall' in val_metrics:
+                log_msg += f", Tracked Recall: {val_metrics['tracked_class_recall']:.4f}"
+            
+            print(log_msg)
             
             # Early stopping based on macro F1-score
             if val_metrics['f1_macro'] > self.best_val_f1:
