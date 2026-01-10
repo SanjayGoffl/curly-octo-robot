@@ -38,26 +38,26 @@ This implementation plan breaks down the AI Crop Disease Identifier into discret
     - Test augmentation application
     - _Requirements: 4.2, 4.5_
 
-- [ ] 3. Stage 1: Crop Identification Model Training
-  - [ ] 3.1 Implement Stage 1 model architecture
+- [x] 3. Stage 1: Crop Identification Model Training
+  - [x] 3.1 Implement Stage 1 model architecture
     - Load pre-trained CNN backbone (EfficientNet-B0 or ResNet-50)
     - Freeze base layers
     - Add classification head for 14 crops
     - _Requirements: 2.3, 2.5, 2.6_
 
-  - [ ] 3.2 Implement balanced sampling or class weighting for Stage 1
+  - [x] 3.2 Implement balanced sampling or class weighting for Stage 1
     - Apply inverse frequency weighting to offset crop imbalance
     - OR implement balanced batch sampling
     - Track per-crop recall during training
     - _Requirements: 2.7_
 
-  - [ ] 3.3 Implement Stage 1 training loop
+  - [x] 3.3 Implement Stage 1 training loop
     - GPU-accelerated training with early stopping
     - Track loss, accuracy, per-class precision/recall, macro F1-score
     - Save best checkpoint based on validation macro F1-score
     - _Requirements: 10.1, 10.3, 10.5, 10.6, 10.7_
 
-  - [ ] 3.4 Evaluate Stage 1 on validation and test sets
+  - [x] 3.4 Evaluate Stage 1 on validation and test sets
     - Generate confusion matrix
     - Report per-class precision, recall, F1-score
     - Report macro F1-score (primary metric)
