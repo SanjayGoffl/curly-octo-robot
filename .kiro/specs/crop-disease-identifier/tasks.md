@@ -38,7 +38,7 @@ This implementation plan breaks down the AI Crop Disease Identifier into discret
     - Test augmentation application
     - _Requirements: 4.2, 4.5_
 
-- [x] 3. Stage 1: Crop Identification Model Training
+- [ ] 3. Stage 1: Crop Identification Model Training
   - [x] 3.1 Implement Stage 1 model architecture
     - Load pre-trained CNN backbone (EfficientNet-B0 or ResNet-50)
     - Freeze base layers
@@ -150,20 +150,20 @@ This implementation plan breaks down the AI Crop Disease Identifier into discret
     - Verify Stage 2 executes only for Apple with confidence ≥ 0.7
     - _Requirements: 1.3, 3.1_
 
-- [ ] 6. Input Validation and Leaf Detection
-  - [ ] 6.1 Implement file validation gate
+- [x] 6. Input Validation and Leaf Detection
+  - [x] 6.1 Implement file validation gate
     - Check file type (JPG/PNG only)
     - Check file size (max 10 MB)
     - Validate file integrity
     - _Requirements: 11.1, 11.2, 11.6_
 
-  - [ ] 6.2 Implement basic leaf detection
+  - [x] 6.2 Implement basic leaf detection
     - Implement heuristic (green pixel ratio) OR lightweight binary classifier
     - Reject obvious non-leaf images
     - Target: ≥90% rejection accuracy on small non-leaf test set
     - _Requirements: 11.4, 11.5_
 
-  - [ ] 6.3 Implement borderline handling
+  - [x] 6.3 Implement borderline handling
     - If leaf detection is borderline: proceed with inference but mark as low-confidence
     - Display warning: "Image quality may affect accuracy"
     - _Requirements: 11.7_
@@ -182,14 +182,14 @@ This implementation plan breaks down the AI Crop Disease Identifier into discret
     - Verify ≥90% rejection accuracy on small test set
     - _Requirements: 11.4, 11.5_
 
-- [ ] 7. Treatment Recommendations Engine
-  - [ ] 7.1 Create hardcoded treatment recommendation database
+- [x] 7. Treatment Recommendations Engine
+  - [x] 7.1 Create hardcoded treatment recommendation database
     - Map 4 apple diseases to treatment/prevention strings
     - Include conservative guidance without prescriptive medical claims
     - Include "consult agronomist" fallback for severe cases
     - _Requirements: 13.1, 13.2, 13.3, 13.4_
 
-  - [ ] 7.2 Implement recommendation lookup function
+  - [x] 7.2 Implement recommendation lookup function
     - Input: disease name
     - Output: treatment and prevention strings
     - _Requirements: 13.1, 13.2_
