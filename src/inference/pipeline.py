@@ -2,10 +2,13 @@
 
 import torch
 import torch.nn.functional as F
+import time
 from pathlib import Path
 from src.data.preprocessing import preprocess_image
 from src.inference.validation import validate_input_file
 from src.inference.recommendations import get_recommendations
+from src.utils.prediction_logger import get_prediction_logger
+from src.utils.model_versioning import get_version_manager
 
 
 class InferencePipeline:
@@ -19,7 +22,9 @@ class InferencePipeline:
         stage1_threshold=0.7,
         stage2_threshold=0.6,
         stage1_classes=None,
-        stage2_classes=None
+        stage2_classes=None,
+        log_dir="./logs",
+        models_dir="./models"
     ):
         """
         Initialize inference pipeline.
@@ -32,6 +37,8 @@ class InferencePipeline:
             stage2_threshold (float): Confidence threshold for Stage 2
             stage1_classes (list): Stage 1 class names
             stage2_classes (list): Stage 2 class names
+            log_dir (str): Directory for logs
+            models_dir (str): Directory containing models
         """
         self.stage1_model = stage1_model
         self.stage2_model = stage2_model
@@ -48,6 +55,11 @@ class InferencePipeline:
             "Apple Cedar Rust"
         ]
         
+        # Initialize logging and versioning
+        self.version_manager = get_version_manager(models_dir)
+        stage1_version = self.version_manager.get_current_version("stage1")
+        self.prediction_logger = get_prediction_logger(log_dir, stage1_version)
+        
         # Set models to eval mode
         self.stage1_model.eval()
         self.stage2_model.eval()
@@ -62,9 +74,16 @@ class InferencePipeline:
         Returns:
             dict: Prediction result with crop, disease, confidence, and recommendations
         """
+        start_time = time.time()
+        
         # Validate input file
         is_valid, error_msg = validate_input_file(image_path)
         if not is_valid:
+            self.prediction_logger.log_error(
+                error_type="INVALID_INPUT",
+                error_message=error_msg,
+                image_path=image_path
+            )
             return {
                 "success": False,
                 "error": error_msg,
@@ -92,6 +111,17 @@ class InferencePipeline:
             
             # Check Stage 1 confidence threshold
             if stage1_confidence < self.stage1_threshold:
+                processing_time = (time.time() - start_time) * 1000
+                self.prediction_logger.log_prediction(
+                    image_path=image_path,
+                    crop="Unknown crop",
+                    crop_confidence=stage1_confidence,
+                    disease=None,
+                    disease_confidence=None,
+                    model_version=self.version_manager.get_current_version("stage1"),
+                    dataset_version=self.version_manager.get_dataset_version("stage1"),
+                    processing_time_ms=processing_time
+                )
                 return {
                     "success": True,
                     "error": None,
@@ -104,6 +134,17 @@ class InferencePipeline:
             
             # Check if crop is Apple
             if crop_name != "Apple":
+                processing_time = (time.time() - start_time) * 1000
+                self.prediction_logger.log_prediction(
+                    image_path=image_path,
+                    crop=crop_name,
+                    crop_confidence=stage1_confidence,
+                    disease=None,
+                    disease_confidence=None,
+                    model_version=self.version_manager.get_current_version("stage1"),
+                    dataset_version=self.version_manager.get_dataset_version("stage1"),
+                    processing_time_ms=processing_time
+                )
                 return {
                     "success": True,
                     "error": None,
@@ -126,6 +167,17 @@ class InferencePipeline:
             
             # Check Stage 2 confidence threshold
             if stage2_confidence < self.stage2_threshold:
+                processing_time = (time.time() - start_time) * 1000
+                self.prediction_logger.log_prediction(
+                    image_path=image_path,
+                    crop=crop_name,
+                    crop_confidence=stage1_confidence,
+                    disease="Unknown disease",
+                    disease_confidence=stage2_confidence,
+                    model_version=self.version_manager.get_current_version("stage2"),
+                    dataset_version=self.version_manager.get_dataset_version("stage2"),
+                    processing_time_ms=processing_time
+                )
                 return {
                     "success": True,
                     "error": None,
@@ -146,6 +198,19 @@ class InferencePipeline:
             else:
                 recommendations_text = "Please consult an agronomist."
             
+            # Log successful prediction
+            processing_time = (time.time() - start_time) * 1000
+            self.prediction_logger.log_prediction(
+                image_path=image_path,
+                crop=crop_name,
+                crop_confidence=stage1_confidence,
+                disease=disease_name,
+                disease_confidence=stage2_confidence,
+                model_version=self.version_manager.get_current_version("stage2"),
+                dataset_version=self.version_manager.get_dataset_version("stage2"),
+                processing_time_ms=processing_time
+            )
+            
             return {
                 "success": True,
                 "error": None,
@@ -157,6 +222,12 @@ class InferencePipeline:
             }
         
         except Exception as e:
+            self.prediction_logger.log_error(
+                error_type="INFERENCE_FAILURE",
+                error_message=str(e),
+                image_path=image_path,
+                exception=e
+            )
             return {
                 "success": False,
                 "error": f"Processing error: {str(e)}",
